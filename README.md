@@ -1,105 +1,316 @@
-# RoomScan
+# 🏠 RoomScan – AI-Powered Appliance Detection & Electricity Bill Estimator
 
-Camera-ready, responsive web app that turns a couple of room photos into an editable appliance
-inventory and a monthly electricity bill estimate, using Google's Gemini vision model.
+RoomScan is a web application that uses **Google Gemini Vision** to analyze room images, identify electrical appliances, estimate their power consumption, and calculate an estimated monthly electricity bill. Instead of manually creating an appliance inventory, users simply upload room photos and receive an AI-generated inventory that can be reviewed and edited before calculating energy usage.
 
-## What it does
+---
 
-- Upload or take up to 3 photos of a room (`+ Add` in the hero card).
-- Gemini identifies electrical/electronic appliances in the photos and estimates a wattage range
-  for each — images are downscaled server-side before being sent to Gemini to keep this fast and
-  cheap without meaningfully hurting detection accuracy.
-- Every detected item (name, category, watts, hours/day) is fully editable, and you can add or
-  remove items manually.
-- Pick a tariff/state (Tamil Nadu, Karnataka, Maharashtra, Delhi, or a custom ₹/unit + fixed
-  charge) and the monthly bill estimate — plus a per-appliance cost breakdown — recalculates live.
-- Export the inventory + bill breakdown as a CSV, and your inventory is saved in the browser
-  (`localStorage`) so a page refresh doesn't lose your data. "Reset" clears it back to the demo
-  state.
+## 🚀 Demo
 
-## Run locally
+**Live Demo:** https://<your-demo-url>
+
+**Video Demo:** https://<your-video-url>
+
+---
+
+## 📸 Features
+
+- Upload up to 3 room images
+- AI-powered appliance detection using Gemini Vision
+- Automatic wattage estimation
+- Editable appliance inventory
+- Monthly electricity bill estimation
+- Custom electricity tariff support
+- Appliance-wise energy breakdown
+- CSV export
+- Local auto-save
+- Responsive web interface
+
+---
+
+# 🛠️ Tech Stack
+
+## Frontend
+
+- Next.js 14
+- React
+- TypeScript
+- Tailwind CSS
+
+## Backend
+
+- Next.js API Routes
+- Google Gemini API
+- Node.js
+
+## AI
+
+- Google Gemini 2.5 Flash / Gemini Vision
+- Prompt Engineering
+- Multimodal Image Understanding
+
+---
+
+# 🏗️ Project Architecture
+
+```
+Room Images
+      │
+      ▼
+Image Optimization
+      │
+      ▼
+Gemini Vision API
+      │
+      ▼
+Appliance Detection
+      │
+      ▼
+Editable Inventory
+      │
+      ▼
+Energy Consumption
+      │
+      ▼
+Electricity Bill Estimation
+```
+
+---
+
+# ⚙️ Installation
+
+## Prerequisites
+
+- Node.js 20+
+- npm or pnpm
+- Google Gemini API Key
+
+---
+
+## Clone
+
+```bash
+git clone https://github.com/<username>/RoomScan.git
+
+cd RoomScan
+```
+
+---
+
+## Install Dependencies
 
 ```bash
 npm install
-cp .env.example .env.local
+```
+
+---
+
+## Configure Environment
+
+Create a `.env.local` file.
+
+```env
+GEMINI_API_KEY=YOUR_API_KEY
+```
+
+---
+
+## Run
+
+```bash
 npm run dev
 ```
 
-Open `http://localhost:3000` in any modern desktop or mobile browser.
+Open
 
-Add `GEMINI_API_KEY` to `.env.local` to enable photo detection (get one free at
-https://aistudio.google.com/apikey). Never commit or share `.env.local` — it's already excluded
-via `.gitignore`.
-
-In development, rate limiting and the Upstash variables are not required (there's an in-memory
-fallback). They're required once `NODE_ENV=production` — see hosting below.
-
-## Production build
-
-```bash
-npm run build
-npm start
+```
+http://localhost:3000
 ```
 
-## Security notes
+---
 
-- The Gemini API key is only ever used server-side (`app/api/detect/route.ts`, `runtime = "nodejs"`)
-  and is never sent to the browser.
-- Uploaded photos are validated for type/size (image/*, ≤10MB, ≤3 per scan) before being sent
-  anywhere.
-- The API route checks the request's `Origin` header against `APP_URL` in production, so another
-  site can't quietly call your Gemini quota from a hidden background request.
-- Rate limiting is enforced per-IP (5 scans/minute) via Upstash Redis in production, since a
-  serverless function's in-memory state doesn't persist reliably across invocations. **Without
-  Upstash configured, the API deliberately fails closed in production rather than allowing
-  unlimited requests against your Gemini billing** — see the hosting steps below.
-- Basic hardening headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`,
-  a restrictive `Permissions-Policy`) are set in `next.config.js`, and the `X-Powered-By` header
-  is disabled.
-- Dependencies are pinned to patched versions (Next.js 14.2.35, which fixes the React Server
-  Components CVEs disclosed in Dec 2025) — run `npm audit` periodically and re-run
-  `npm install next@latest` within the 14.x line if a new advisory appears.
+# 🧪 How Judges Can Test
 
-## Host it for free (Vercel + Upstash)
+### Option 1 (Recommended)
 
-Vercel is the natural fit since it's built by the Next.js team and has a generous free ("Hobby")
-tier with no credit card required.
+Use the deployed application:
 
-1. **Push this project to GitHub** (a new empty repo is fine):
-   ```bash
-   git init && git add . && git commit -m "RoomScan"
-   git branch -M main
-   git remote add origin https://github.com/<you>/<repo>.git
-   git push -u origin main
-   ```
-2. **Create a free Upstash Redis database** (needed for rate limiting in production):
-   go to https://upstash.com → sign up free → *Create Database* → pick a nearby region → open the
-   database → copy the **REST URL** and **REST Token** shown on its dashboard.
-3. **Import the repo into Vercel**: go to https://vercel.com → sign up free (can use your GitHub
-   login) → *Add New → Project* → select your repo. Vercel auto-detects Next.js — no build
-   configuration needed.
-4. **Before deploying**, add these Environment Variables in the Vercel project settings:
-   - `GEMINI_API_KEY` — your Gemini key
-   - `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` — from step 2
-   - `APP_URL` — you won't know your final `*.vercel.app` URL until after the first deploy, so put
-     a placeholder for now (e.g. `https://placeholder.vercel.app`)
-5. **Deploy.** Once it's live, copy the actual assigned URL (e.g.
-   `https://roomscan-yourname.vercel.app`), go back into the project's Environment Variables, fix
-   `APP_URL` to that exact URL, and redeploy (Vercel → Deployments → ⋯ → Redeploy) so the origin
-   check picks it up. If you attach a custom domain later (Vercel's free tier supports this),
-   update `APP_URL` again the same way.
-6. **Try a scan** on the live URL to confirm everything's wired up.
+> https://<your-demo-url>
 
-Notes on the free tier:
-- Vercel's Hobby plan restricts serverless functions to personal/non-commercial use and caps
-  function execution time (historically ~10s by default, more with Fluid Compute — check
-  Vercel's current docs at https://vercel.com/docs/functions/limitations, since these limits do
-  change). A scan that needs a retry due to a transient Gemini overload can occasionally take
-  longer than a few seconds; if you see timeouts under load, that's the likely cause.
-- `sharp` (used for image downscaling) needs no special hosting configuration — Vercel supports it
-  natively (it's the same library `next/image` uses internally).
-- Google's Gemini API free tier has its own separate request-per-minute/day limits — check your
-  usage at https://aistudio.google.com/apikey if scans start failing under real traffic.
-- Nothing here needs a database. `supabase/schema.sql` is unused scaffolding for a possible future
-  "saved scans + login" feature — the app works fully today without any Supabase setup.
-# RoomScan
+No installation required.
+
+---
+
+### Option 2
+
+Run locally.
+
+1. Clone repository
+2. Install dependencies
+3. Add Gemini API Key
+4. Run
+
+```bash
+npm run dev
+```
+
+Upload the provided sample room images located in:
+
+```
+/sample-images
+```
+
+---
+
+# 📂 Project Structure
+
+```
+app/
+components/
+lib/
+public/
+sample-images/
+styles/
+```
+
+---
+
+# 🤖 How We Collaborated with Codex
+
+Codex played a significant role throughout the development process, acting as an AI pair programmer that accelerated implementation while leaving final engineering decisions to our team.
+
+### Where Codex Accelerated Development
+
+During the project, Codex helped us:
+
+- Scaffold the Next.js application structure
+- Generate reusable React components
+- Build API routes for Gemini integration
+- Refactor TypeScript interfaces
+- Improve error handling
+- Optimize image upload workflows
+- Debug runtime issues
+- Improve code organization
+- Generate utility functions
+- Suggest better project architecture
+
+Instead of spending hours writing repetitive boilerplate, we were able to focus on product development and user experience.
+
+---
+
+## Engineering Decisions We Made
+
+Although Codex accelerated development, several important decisions were made manually:
+
+- Designing the overall user workflow
+- Choosing Gemini Vision as the AI engine
+- Creating the editable appliance inventory instead of relying solely on AI predictions
+- Building the electricity estimation logic
+- Supporting customizable electricity tariffs
+- Designing the responsive user interface
+- Deciding on CSV export and local persistence
+- Implementing secure server-side API handling
+
+These decisions ensured that RoomScan solved a practical real-world problem rather than serving as only an AI demonstration.
+
+---
+
+## How GPT-5.6 Contributed
+
+GPT-5.6 served as our technical collaborator throughout the project by helping us:
+
+- Brainstorm product ideas
+- Improve prompt engineering for appliance detection
+- Explain API behavior
+- Optimize project architecture
+- Improve UX copy
+- Refine energy calculation logic
+- Review code quality
+- Generate technical documentation
+- Create the Devpost submission
+- Write the project story and README
+
+GPT-5.6 also helped us evaluate alternative implementation approaches before coding them, reducing development time and improving overall quality.
+
+---
+
+## Final Outcome
+
+The combination of human decision-making, Codex-assisted development, and GPT-5.6 guidance enabled us to build a polished full-stack AI application in significantly less time while maintaining clean architecture and a strong user experience.
+
+Codex handled repetitive engineering tasks, GPT-5.6 provided design and implementation guidance, and we made the final product, engineering, and UX decisions.
+
+---
+
+# 💡 Challenges
+
+- Reliable appliance recognition
+- Different room lighting conditions
+- Prompt engineering
+- Image optimization
+- Secure API integration
+- Balancing speed with AI accuracy
+
+---
+
+# 📚 What We Learned
+
+- Building production-ready AI applications
+- Working with multimodal LLMs
+- Prompt engineering
+- Next.js App Router
+- TypeScript best practices
+- Image preprocessing
+- Secure API architecture
+- Designing AI-assisted user experiences
+
+---
+
+# 🔮 Future Work
+
+- Multi-room scanning
+- Cloud synchronization
+- Smart meter integration
+- IoT device support
+- Historical analytics
+- Energy-saving recommendations
+- Improved AI confidence scoring
+- Mobile application
+
+---
+
+# 🌐 Supported Platforms
+
+- Chrome
+- Edge
+- Firefox
+- Safari
+
+Desktop and Mobile browsers are fully supported.
+
+---
+
+# 📦 Dependencies
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Google Gemini API
+
+---
+
+# 🏆 Codex Session Feedback
+
+**Codex Session ID**
+
+```
+/feedback <PASTE_YOUR_CODEX_SESSION_ID_HERE>
+```
+
+Replace the placeholder above with the **Codex Session ID** from the project thread where the majority of RoomScan's core functionality was developed.
+
+---
+
+# 👥 Team
+
+Built with ❤️ using Google Gemini, GPT-5.6, Codex, Next.js, React, and TypeScript.
