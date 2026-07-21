@@ -102,3 +102,4 @@ Notes on the free tier:
   usage at https://aistudio.google.com/apikey if scans start failing under real traffic.
 - Nothing here needs a database. `supabase/schema.sql` is unused scaffolding for a possible future
   "saved scans + login" feature — the app works fully today without any Supabase setup.
+# RoomScan
